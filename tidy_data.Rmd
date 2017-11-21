@@ -1,11 +1,4 @@
 ---
-title: "Ordenar datos DowJones Index"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ### Preparación del entorno
 
