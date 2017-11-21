@@ -1,0 +1,83 @@
+---
+title: "Ordenar datos DowJones Index"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Preparación del entorno
+
+Limpiamos las variables.
+```
+rm(list=ls())
+setwd('/Users/pabalca/Documents/Master-TelefonicaBI/Modulo3-DatascienceTradicional-R/programas/')
+getwd()
+```
+
+Creamos el directorio de trabajo.
+```
+if (!file.exists("./datos/dowjones_index")){
+  dir.create("./datos/dowjones_index")
+}
+```
+
+Descargamos el dataset original de la web.
+```
+if (length(list.files("./datos/dowjones_index")) == 0){
+  fileURL <- "https://archive.ics.uci.edu/ml/machine-learning-databases/00312/dow_jones_index.zip"
+  download.file(fileURL,destfile = "./datos/dowjones_index/dowjones_index.zip", method="curl")
+  unzip("./datos/dowjones_index/dowjones_index.zip", exdir="./datos")
+  list.files("./datos/dowjones_index")
+  fechaDescarga <- date()
+}
+```
+
+Cargamos el dataset
+```
+dowjones <- read.table("./datos/dowjones_index/dow_jones_index.data",
+                         row.names = NULL, sep = ",", header = TRUE)
+```                         
+
+### Exploracion general
+
+```
+summary(dowjones)
+names(dowjones)
+```
+
+### Limpieza del dataset
+Filtrar por stock y elegir variables
+```
+dowjones.mod <- dowjones %>% filter(stock=="XOM") %>%
+  select(stock,date,open,close,high,low,volume)
+```
+
+Eliminar carácteres especiales (\$)
+```
+dowjones.mod$open  = as.numeric(gsub("\\$", "", dowjones.mod$open))
+dowjones.mod$close = as.numeric(gsub("\\$", "", dowjones.mod$close))
+dowjones.mod$high  = as.numeric(gsub("\\$", "", dowjones.mod$high))
+dowjones.mod$low   = as.numeric(gsub("\\$", "", dowjones.mod$low))
+```
+
+Fechas como objetos Date
+```
+dowjones.mod$date <- as.Date(dowjones.mod$date, "%m/%d/%Y")
+```
+
+Ordenar por volumen
+```
+dowjones.mod <- dowjones.mod[order(xtfrm(dowjones.mod[,7]),decreasing = TRUE), ] 
+```
+
+### Guardar el dataset
+```
+if (!file.exists("./datos/dowjones_index/output")) {
+  dir.create("./datos/dowjones_index/output")
+  }
+
+dowjones_save <- dowjones.mod[,-1] 
+write.table(dowjones_save,file="./datos/dowjones_index/output/xom_data.data", sep=";")
+```
